@@ -46,9 +46,9 @@ def send_message(message, bot_client):
 
 def main():
     # проинициализировать бота здесь
+    logging.info('Работа началась')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
@@ -59,9 +59,9 @@ def main():
                 )
             current_timestamp = new_homework.get('current_date')
             time.sleep(300)  # опрашивать раз в пять минут
-
-        except Exception as e:
-            print(f'Бот столкнулся с ошибкой: {e}')
+        except Exception as error:
+            logging.error(error, exc_info=True)
+            print(f'Бот столкнулся с ошибкой: {error}')
             time.sleep(5)
 
 
