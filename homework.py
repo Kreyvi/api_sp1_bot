@@ -45,7 +45,6 @@ def send_message(message, bot_client):
 
 
 def main():
-    # проинициализировать бота здесь
     logging.info('Работа началась')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
