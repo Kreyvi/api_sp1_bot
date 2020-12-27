@@ -16,9 +16,6 @@ API_PARAMS = {
 API_METHODS = {
     'homework': 'user_api/homework_statuses/'
 }
-# PRAKTIKUM_TOKEN = os.getenv('PRAKTIKUM_TOKEN')
-# TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-# CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 API_URL = 'https://praktikum.yandex.ru/api/'
 STATUSES = {
     'rejected': 'К сожалению в работе нашлись ошибки.',
@@ -34,16 +31,20 @@ logging.basicConfig(
 
 
 def parse_homework_status(homework):
+    if 'homework_name' not in homework or 'status' not in homework:
+        return 'Произошла ошибка'
     homework_name = homework['homework_name']
     homework_status = homework['status']
-    if homework_status in STATUSES:
-        verdict = STATUSES[homework_status]
-        return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
-    else:
-        return 'Что-то пошло не так и мы не знаем что с вашей работой'
+    if homework_status not in STATUSES:
+        return 'Что-то пошло не так, поэтому мы не знаем что с вашей работой'
+    verdict = STATUSES[homework_status]
+    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
-def get_homework_statuses(current_timestamp):
+def get_homework_statuses(current_timestamp=None):
+    if not isinstance(current_timestamp, (int, float)) or (
+            current_timestamp is None):
+        current_timestamp = time.time()
     headers = {
         'Authorization': 'OAuth ' + API_PARAMS['PRAKTIKUM_TOKEN']
     }
@@ -53,6 +54,7 @@ def get_homework_statuses(current_timestamp):
         params=params,
         headers=headers
     )
+
     return homework_statuses.json()
 
 
@@ -80,6 +82,7 @@ def main():
         except Exception as error:
             logging.error(error, exc_info=True)
             time.sleep(5)
+
 
 if __name__ == '__main__':
     main()
