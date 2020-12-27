@@ -49,12 +49,22 @@ def get_homework_statuses(current_timestamp=None):
         'Authorization': 'OAuth ' + API_PARAMS['PRAKTIKUM_TOKEN']
     }
     params = {'from_date': current_timestamp}
-    homework_statuses = requests.get(
-        url=API_URL+API_METHODS['homework'],
-        params=params,
-        headers=headers
-    )
-
+    try:
+        homework_statuses = requests.get(
+            url=API_URL+API_METHODS['homework'],
+            params=params,
+            headers=headers
+        )
+    except (
+            requests.HTTPError,
+            requests.ConnectionError,
+            requests.Timeout
+    ) as error:
+        logging.error(error, exc_info=True)
+        raise
+    except requests.RequestException as error:
+        logging.error(error, exc_info=True)
+        return {}
     return homework_statuses.json()
 
 
@@ -72,13 +82,13 @@ def main():
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
-            if new_homework.get('homeworks'):
+            if new_homework.get('homeworks') is not None:
                 send_message(
                     parse_homework_status(new_homework.get('homeworks')[0]),
                     bot
                 )
             current_timestamp = new_homework.get('current_date')
-            time.sleep(300)  # опрашивать раз в пять минут
+            time.sleep(300)
         except Exception as error:
             logging.error(error, exc_info=True)
             time.sleep(5)
@@ -86,4 +96,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
